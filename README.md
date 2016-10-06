@@ -6,13 +6,13 @@
 
 ## Getting started
 
-	docker run --net=host doubledensity/coreos-pxe-installer
+	docker run --net=host quay.io/doubledensity/coreos-pxe-installer
 
 If you run docker under VM, make sure the VM's network is bridged to the network of your DHCP server. For vagrant, it's `config.vm.network "public_network"`
 
 Use `ENV INTERFACE` to customize your interface if it's not eno1 in your host
 
-    docker run --net=host -e INTERFACE=ens224 doubledensity/coreos-pxe-installer
+    docker run --net=host -e INTERFACE=ens224 quay.io/doubledensity/coreos-pxe-installer
 
 ## Customizations
 
