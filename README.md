@@ -2,17 +2,17 @@
 
 > Bootstrap CoreOS cluster via PXE in seconds
 
-[![Docker Repository on Quay.io](https://quay.io/repository/quanlong/coreos-pxe-installer/status "Docker Repository on Quay.io")](https://quay.io/repository/quanlong/coreos-pxe-installer)
+[![Docker Repository on Quay.io](https://quay.io/repository/doubledensity/coreos-pxe-installer/status "Docker Repository on Quay.io")](https://quay.io/repository/doubledensity/coreos-pxe-installer)
 
 ## Getting started
 
-    docker run --net=host quanlong/coreos-pxe-installer
+	docker run --net=host doubledensity/coreos-pxe-installer
 
 If you run docker under VM, make sure the VM's network is bridged to the network of your DHCP server. For vagrant, it's `config.vm.network "public_network"`
 
-Use `ENV INTERFACE` to customize your interface if it's not eth1 in your host
+Use `ENV INTERFACE` to customize your interface if it's not eno1 in your host
 
-    docker run --net=host -e INTERFACE=eth0 quanlong/coreos-pxe-installer
+    docker run --net=host -e INTERFACE=ens224 doubledensity/coreos-pxe-installer
 
 ## Customizations
 
@@ -30,6 +30,11 @@ There are some template variables you can use in the configurations, **coreos-px
 - `client_ip`, current client ipv4 address
 - `client_ip_dash`, replace `.` to `-` of `client_ip`
 - `etcd_discovery_token`, etcd Discovery Token
+
+TBD
+
+### IP list and MAC list
+TBD
 
 ### Adding a Custom OEM
 

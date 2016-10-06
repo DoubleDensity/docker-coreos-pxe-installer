@@ -7,14 +7,52 @@ pxe_server_ip=$(ifconfig $INTERFACE | grep 'inet addr:' | cut -d: -f2 | awk '{pr
 echo Server IP: $pxe_server_ip
 
 # Update discovery token, bootstrap with 3 nodes
-# sed -i -e s,DISCOVERY_TOKEN,$(wget -qO- https://discovery.etcd.io/new?size=3),g /pxe/cloud-config.yml
+sed -i -e s,DISCOVERY_TOKEN,$(wget -qO- https://discovery.etcd.io/new?size=3),g /app/config/cloud-config.yml
 
 # Fallback to default config if user dose not provide
 [ ! -d /config/pxelinux.cfg ] && \
     echo "Use default configs" && cp -a /app/config/. /config
 
+# remove any existing rules
+iptables -t raw -F PREROUTING || true
+iptables -t raw -F PXEboot || true
+iptables -t raw -X PXEboot || true
+
+# Create the PXEboot chain in the 'raw' table
+iptables -t raw -N PXEboot
+
+# Incoming DHCP, pass to chain processing DHCP
+iptables -t raw -A PREROUTING -p udp --dport 67 -j PXEboot
+iptables -t raw -A PREROUTING -p udp --dport 69 -j PXEboot
+iptables -t raw -A PREROUTING -p tcp --dport 80 -j PXEboot
+iptables -t raw -A PREROUTING -p tcp --dport 3000 -j PXEboot
+
+# Allowed DHCP clients
+
+if [ -e /config/maclist.csv ]; then
+    tail -n +2 /config/maclist.csv | while read line
+    do
+        iptables -t raw -A PXEboot -m mac --mac-source $(echo $line | cut -d, -f1) -j ACCEPT
+    done
+fi
+
+# Deny other clients not listed above
+iptables -t raw -A PXEboot -j DROP
+
 # Copy to tftp root
-cp -R /config/pxelinux.cfg /app/tftp
+# if we are using the iplist then copy over a config for each MAC address defined and disable the use of 'default'
+if [ -e /config/iplist.csv ]; then
+    tail -n +2 /config/iplist.csv | while read line
+    do
+        mkdir -p /app/tftp/pxelinux.cfg/
+        cp -v /config/pxelinux.cfg/default /app/tftp/pxelinux.cfg/$(echo $line | cut -d, -f2)
+    done
+else
+    # otherwise if not using iplist then copy over the default
+    #cp -R /config/pxelinux.cfg /app/tftp
+    echo "default PXE disabled for safety"
+fi
+
 chmod a+r /app/tftp/pxelinux.cfg/*
 
 # Update pxelinux config to point real server ip
@@ -26,9 +64,13 @@ python3 -u /app/httpd.py /config $pxe_server_ip 80 &
 # Download image
 if [ ! -d /config/images ];then
     echo "Downloading CoreOS images"
-    mkdir -p /config/images/633.1.0
-    wget http://stable.release.core-os.net/amd64-usr/633.1.0/coreos_production_image.bin.bz2
-    wget http://stable.release.core-os.net/amd64-usr/633.1.0/coreos_production_image.bin.bz2.sig
+    mkdir -p /config/images/current
+    wget http://stable.release.core-os.net/amd64-usr/current/coreos_production_image.bin.bz2
+    wget http://stable.release.core-os.net/amd64-usr/current/coreos_production_image.bin.bz2.sig
+    wget http://stable.release.core-os.net/amd64-usr/current/version.txt
+
+    VERSION_ID=$(cat version.txt | gawk --field-separator '=' '/COREOS_VERSION=/ { print $2 }')
+    ln -s /config/images/current /config/images/$VERSION_ID
 fi
 
 # Host images
