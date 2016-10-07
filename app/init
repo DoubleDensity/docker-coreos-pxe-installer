@@ -45,7 +45,7 @@ if [ -e /config/iplist.csv ]; then
     tail -n +2 /config/iplist.csv | while read line
     do
         mkdir -p /app/tftp/pxelinux.cfg/
-        cp -v /config/pxelinux.cfg/default /app/tftp/pxelinux.cfg/$(echo $line | cut -d, -f2)
+        cp -v /config/pxelinux.cfg/default /app/tftp/pxelinux.cfg/01-$(echo $line | cut -d, -f2)
     done
 else
     # otherwise if not using iplist then copy over the default
