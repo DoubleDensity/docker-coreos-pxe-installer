@@ -50,7 +50,8 @@ if [ -e /config/iplist.csv ]; then
 else
     # otherwise if not using iplist then copy over the default
     #cp -R /config/pxelinux.cfg /app/tftp
-    echo "default PXE disabled for safety"
+    echo "default PXE disabled for safety, please suppy an iplist.csv file"
+    exit 1
 fi
 
 chmod a+r /app/tftp/pxelinux.cfg/*
