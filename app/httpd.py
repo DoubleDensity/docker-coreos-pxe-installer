@@ -67,11 +67,11 @@ class PxeHandler(http.server.SimpleHTTPRequestHandler):
         except FileNotFoundError:
             self.send_response(404)
             self.end_headers()
-            return
+            return     
 
         self.send_response(200)
         self.end_headers()
-
+		
         # increment the counter only when the clients request the cloud-config.yml file
         if self.path.endswith(".yml"):
 
@@ -105,7 +105,7 @@ class PxeHandler(http.server.SimpleHTTPRequestHandler):
         
         options = {
                 "server_ip": server_ip,
-                "client_ip": self.client_address[0],
+                "name": name,
                 "public_ip": client_ip,
                 "private_ip": private_ip2,
                 "private_ip2": private_ip3,
