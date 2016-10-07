@@ -9,7 +9,7 @@ echo Server IP: $pxe_server_ip
 # Update discovery token, bootstrap with 3 nodes
 sed -i -e s,DISCOVERY_TOKEN,$(wget -qO- https://discovery.etcd.io/new?size=3),g /app/config/cloud-config.yml
 
-# Fallback to default config if user dose not provide
+# Fallback to default config if user does not provide
 [ ! -d /config/pxelinux.cfg ] && \
     echo "Use default configs" && cp -a /app/config/. /config
 
@@ -81,6 +81,7 @@ python3 -u -m http.server 3000 &
 # Start dnsmasq as dhcp proxy to $pxe_server_ip
 dnsmasq \
     --dhcp-range=$pxe_server_ip,proxy \
+    --interface=$INTERFACE \
     --dhcp-no-overrid \
     --dhcp-boot=pxelinux.0,pxeserver,$pxe_server_ip \
     --pxe-service=x86PC,"Install CoreOS",pxelinux \
