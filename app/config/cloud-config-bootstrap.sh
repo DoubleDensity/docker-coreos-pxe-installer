@@ -10,4 +10,4 @@ until curl -O http://%(server_ip)s/cloud-config.yml; do sleep 2; done
 # Install coreos
 until sudo coreos-install -V stable -d /dev/sda -c cloud-config.yml -b http://%(server_ip)s:3000; do sleep 2; done
 
-sudo shutdown -P
+sudo reboot
